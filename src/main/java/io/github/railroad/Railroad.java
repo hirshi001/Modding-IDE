@@ -4,14 +4,16 @@ import io.github.railroad.config.Configs;
 import io.github.railroad.drp.DiscordRichPresenceManager;
 import io.github.railroad.objects.ConfirmWindow;
 import io.github.railroad.objects.RailroadTopMenu;
-import io.github.railroad.objects.SelectVersionWindow;
-import io.github.railroad.platform.PlatformType;
+import io.github.railroad.packageExplorer.PackageExplorerTab;
 import io.github.railroad.utility.UIUtils;
 import javafx.application.Application;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
+import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Railroad extends Application {
@@ -46,10 +48,30 @@ public class Railroad extends Application {
 			window.close();
 	}
 
+	public SplitPane centerSplitPane;
+	public Pane leftPane;
+
 	// TODO: Start filling out some of these other menus.
 	public void createComponents(Node topMenu, Stage window) {
 		BorderPane borderPane = new BorderPane();
 		borderPane.setTop(topMenu);
+
+
+		//Testing
+		TabPane paneToOpenFile = new TabPane();
+
+		centerSplitPane = new SplitPane();
+		//leftPane = new PackageExplorerTab(paneToOpenFile);
+
+		centerSplitPane.getItems().addAll(new PackageExplorerTab(paneToOpenFile), paneToOpenFile);
+
+		//borderPane.setLeft(leftPane);
+		borderPane.setCenter(centerSplitPane);
+
+
+
+
+
 		this.mainScene = new Scene(borderPane);
 	}
 
