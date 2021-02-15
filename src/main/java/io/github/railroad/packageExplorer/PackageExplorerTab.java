@@ -29,7 +29,7 @@ import javafx.util.Callback;
 import java.io.File;
 
 
-public class PackageExplorerTab extends Pane {
+public class PackageExplorerTab extends Tab {
 
     /**
      * The directory this package explorer is in right now.
@@ -42,7 +42,7 @@ public class PackageExplorerTab extends Pane {
 
     public PackageExplorerTab(TabPane paneToOpenFile){
 
-        super();
+        super(Configs.INSTANCE.lang.get("package_explorer.name"));
 
         this.paneToOpenFile = paneToOpenFile;
         packageExplorerRootDirectory = new File("/Users/hrishikesh/Desktop/MemeFolder");
@@ -53,33 +53,47 @@ public class PackageExplorerTab extends Pane {
         TreeView<File> tree = new TreeView<>(rootItem);
         tree.setEditable(true);
 
-
-        tree.setCellFactory(p -> new TextFieldTreeCellImpl());
-        tree.addEventHandler(MouseEvent.MOUSE_CLICKED, this::handleMouseClicked);
-
+        tree.setCellFactory(r -> new TextFieldTreeCellImpl());
+        tree.addEventHandler(MouseEvent.MOUSE_PRESSED, this::handleMouseClicked);
+        tree.addEventHandler(KeyEvent.KEY_RELEASED, this::handleKeyTyped);
 
         VBox root = new VBox();
 
-        root.prefWidthProperty().bind(this.widthProperty());
-        root.getChildren().addAll(new Label(Configs.INSTANCE.lang.get("package_explorer.name")), tree);
+        //root.prefWidthProperty().bind(this.getTabPane().widthProperty());
+        root.getChildren().addAll(tree);
 
         this.tree = tree;
-        this.getChildren().add(root);
-
-
+        this.setContent(root);
        // this.addEventHandler(MouseEvent.);
-
     }
 
+
     private void handleMouseClicked(MouseEvent event) {
+
         if(event.getClickCount()==2){
             TreeItem<File> treeItem =  tree.getSelectionModel().getSelectedItem();
-            if(treeItem == null) return;
+            if(!(treeItem instanceof FileTreeItem)) return;
+            event.consume();
+            System.out.println(tree.getEditingItem().getValue().getName());
             File fileToOpen = treeItem.getValue();
             System.out.println(fileToOpen.getName());
             //TODO: open the File in a new tab
             paneToOpenFile.getTabs().add(new Tab(Double.toString(Math.random())));
             }
+    }
+
+    private void handleKeyTyped(KeyEvent event){
+        //System.out.println(event.getCode().getClass().getName());
+        if(event.getCode()==KeyCode.ENTER){
+            System.out.println("ENTER PRESSED");
+            TreeItem<File> selected = tree.getSelectionModel().getSelectedItem();
+            if(selected instanceof FileTreeItem){
+                System.out.println("instance of File Tree Item");
+                FileTreeItem fileTreeItem = (FileTreeItem) selected;
+                fileTreeItem.editing.setValue(true);
+                tree.edit(fileTreeItem);
+            }
+        }
     }
 
     /*
@@ -101,24 +115,29 @@ public class PackageExplorerTab extends Pane {
         private TextField textField;
 
         public TextFieldTreeCellImpl() {
-            addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+            //this.setEditable(false);
+
+            addEventHandler(KeyEvent.KEY_TYPED, new EventHandler<KeyEvent>() {
                 @Override
-                public void handle(MouseEvent event) {
-                    //System.out.println("event being handled");
-                    if(event.getTarget() instanceof TextFieldTreeCellImpl) {
-                        //System.out.println("InstanceOF");
-                        TreeItem<File> item =  ((TextFieldTreeCellImpl) event.getTarget()).getTreeItem();
-                        if(item instanceof FileTreeItem){
-                            System.out.println(item.getValue().getName());
+                public void handle(KeyEvent event) {
+                    System.out.println(event.getTarget().getClass());
+                    if(event.getTarget() instanceof TextFieldTreeCellImpl){
+                        if(event.getCode() == KeyCode.ENTER) {
+                            TreeItem<File> selectedItem = ((TextFieldTreeCellImpl)event.getTarget()).getTreeItem();
+                            if(selectedItem!=null){
+                                startEditWhenSpace();
+                            }
                         }
                     }
-                }
-            });
+            }
+        });
+
+
         }
 
-        /*
-        @Override
-        public void startEdit() {
+        public void startEditWhenSpace(){
+
             super.startEdit();
 
             if (textField == null) {
@@ -129,14 +148,42 @@ public class PackageExplorerTab extends Pane {
             textField.selectAll();
         }
 
+
+
+        @Override
+        public void startEdit() {
+            System.out.println("start edit");
+            if (getTreeItem() instanceof FileTreeItem) {
+                System.out.println("start edit: instance of file tree item");
+                FileTreeItem treeItem = (FileTreeItem) getTreeItem();
+                if(treeItem.editing.getValue()){
+                    startEditWhenSpace();
+                    System.out.println("EDIT");
+                }
+            }
+
+        }
+
         @Override
         public void cancelEdit() {
             super.cancelEdit();
-            setText((String) getItem());
+            setText(getItem().getName());
             setGraphic(getTreeItem().getGraphic());
+            if (getTreeItem() instanceof FileTreeItem) {
+                FileTreeItem treeItem = (FileTreeItem) getTreeItem();
+                treeItem.editing.setValue(false);
+            }
         }
 
-        */
+        @Override
+        public void commitEdit(File newValue) {
+            super.commitEdit(newValue);
+            if (getTreeItem() instanceof FileTreeItem) {
+                FileTreeItem treeItem = (FileTreeItem) getTreeItem();
+                treeItem.editing.setValue(false);
+            }
+        }
+
         @Override
         public void updateItem(File item, boolean empty) {
             super.updateItem(item, empty);
@@ -158,21 +205,21 @@ public class PackageExplorerTab extends Pane {
             }
         }
 
-        /*
+
         private void createTextField() {
             textField = new TextField(getString());
             textField.setOnKeyReleased(new EventHandler<KeyEvent>() {
                 @Override
                 public void handle(KeyEvent t) {
                     if (t.getCode() == KeyCode.ENTER) {
-                        commitEdit(textField.getText());
+                        //commitEdit(textField.getText());
                     } else if (t.getCode() == KeyCode.ESCAPE) {
                         cancelEdit();
                     }
                 }
             });
         }
-         */
+
 
         private String getString() {
             return getItem() == null ? "" : getItem().getName();

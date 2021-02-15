@@ -1,5 +1,7 @@
 package io.github.railroad.packageExplorer;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -9,6 +11,10 @@ import javafx.scene.input.MouseEvent;
 import java.io.File;
 
 public class FileTreeItem extends TreeItem<File> {
+
+
+    //public boolean editing = false;
+    public BooleanProperty editing = new SimpleBooleanProperty(false);
 
     public FileTreeItem(File file){
         super(file);

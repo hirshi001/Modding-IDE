@@ -63,7 +63,7 @@ public class Railroad extends Application {
 		centerSplitPane = new SplitPane();
 		//leftPane = new PackageExplorerTab(paneToOpenFile);
 
-		centerSplitPane.getItems().addAll(new PackageExplorerTab(paneToOpenFile), paneToOpenFile);
+		centerSplitPane.getItems().addAll(new TabPane(new PackageExplorerTab(paneToOpenFile)), paneToOpenFile);
 
 		//borderPane.setLeft(leftPane);
 		borderPane.setCenter(centerSplitPane);
